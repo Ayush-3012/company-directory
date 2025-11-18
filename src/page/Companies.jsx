@@ -1,10 +1,8 @@
-/* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 const CompaniesPage = () => {
   const [companies, setCompanies] = useState([]);
-  const [filtered, setFiltered] = useState([]);
 
   const [industry, setIndustry] = useState("");
   const [location, setLocation] = useState("");
@@ -12,18 +10,16 @@ const CompaniesPage = () => {
 
   const { searchQuery } = useSelector((state) => state.search);
 
-  // 📌 Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Fetch companies.json
+  // Fetch companies.json from PUBLIC folder
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/src/utils/companies.json");
+        const res = await fetch("/companies.json");
         const data = await res.json();
         setCompanies(data);
-        setFiltered(data);
       } catch (error) {
         console.log("Error fetching companies:", error);
       }
@@ -31,41 +27,35 @@ const CompaniesPage = () => {
     fetchData();
   }, []);
 
-  // Apply filters + search + sort
-  useEffect(() => {
+  // FILTER + SEARCH + SORT
+  const filtered = useMemo(() => {
     let data = [...companies];
 
-    // 🔍 1. Search (Redux)
     if (searchQuery.trim() !== "") {
       data = data.filter((c) =>
         c.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // 🏭 2. Industry
     if (industry !== "") {
       data = data.filter((c) => c.industry === industry);
     }
 
-    // 📍 3. Location
     if (location !== "") {
       data = data.filter((c) => c.location === location);
     }
 
-    // 🔤 4. Sorting
     if (sortOrder === "asc") {
       data.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === "desc") {
       data.sort((a, b) => b.name.localeCompare(a.name));
     }
 
-    setFiltered(data);
-    setCurrentPage(1); // Reset page on every filter/search change
+    return data;
   }, [companies, searchQuery, industry, location, sortOrder]);
 
-  // ===================== PAGINATION LOGIC =====================
+  // PAGINATION
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
-
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
@@ -74,42 +64,44 @@ const CompaniesPage = () => {
     window.scrollTo(0, 0);
   };
 
-  // =============================================================
-
   return (
-    <div className="p-6 text-slate-100">
-      {/* ================= Filters UI ================= */}
-      <div className="flex gap-4 mb-6 max-sm:flex-col">
+    <div className="p-8 text-slate-100 min-h-screen bg-linear-to-b from-gray-900 via-gray-800 to-gray-900">
+      {/* Filters  */}
+      <div className="flex gap-4 mb-8 max-sm:flex-col">
         <select
           value={industry}
-          onChange={(e) => setIndustry(e.target.value)}
-          className="px-4 py-2 bg-gray-700 rounded"
+          onChange={(e) => {
+            setIndustry(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="px-4 py-3 bg-slate-800 cursor-pointer border border-slate-700 rounded-lg text-slate-200 hover:border-emerald-400 transition"
         >
-          <option value="">All Industries</option>
-          <option value="Technology">Technology</option>
-          <option value="IT Services">IT Services</option>
-          <option value="Food Delivery">Food Delivery</option>
-          <option value="E-Commerce">E-Commerce</option>
           <option value="Automobile">Automobile</option>
           <option value="Electronics">Electronics</option>
+          <option value="Hospitality">Hospitality</option>
         </select>
 
         <select
           value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="px-4 py-2 bg-gray-700 rounded"
+          onChange={(e) => {
+            setLocation(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="px-4 py-3 bg-slate-800 cursor-pointer border border-slate-700 rounded-lg text-slate-200 hover:border-emerald-400 transition"
         >
-          <option value="">All Locations</option>
-          <option value="USA">USA</option>
           <option value="India">India</option>
           <option value="Japan">Japan</option>
           <option value="Germany">Germany</option>
+          <option value="Singapore">Singapore</option>
+          <option value="Canada">Canada</option>
         </select>
-
         <select
           value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-          className="px-4 py-2 bg-gray-700 rounded"
+          onChange={(e) => {
+            setSortOrder(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="px-4 py-3 bg-slate-800 border cursor-pointer border-slate-700 rounded-lg text-slate-200 hover:border-emerald-400 transition"
         >
           <option value="">Sort by Name</option>
           <option value="asc">A → Z</option>
@@ -117,52 +109,82 @@ const CompaniesPage = () => {
         </select>
       </div>
 
-      {/* ===================== COMPANY CARDS ===================== */}
+      {/* Results  */}
       {currentItems.length === 0 ? (
-        <p className="text-center text-lg text-red-400">No companies found.</p>
+        <p className="text-center text-4xl text-red-400">
+          404 - No companies found. 😕
+        </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentItems.map((company) => (
             <div
               key={company.id}
-              className="p-4 bg-gray-800 rounded-lg shadow-md border border-gray-700"
+              className="
+                bg-slate-900 border border-slate-400
+                rounded-br-2xl rounded-tl-2xl p-5 shadow-lg
+                hover:border-emerald-400 
+                hover:rounded-tr-2xl hover:rounded-bl-2xl
+                hover:rounded-br-none
+                hover:rounded-tl-none
+                hover:scale-105
+                hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]
+                transition-all duration-300
+                cursor-pointer
+                group
+                flex justify-between items-center
+                py-8
+              "
             >
-              <h2 className="text-xl font-bold text-green-400">
-                {company.name}
-              </h2>
-              <p className="text-gray-300">Industry: {company.industry}</p>
-              <p className="text-gray-300">Location: {company.location}</p>
-              <p className="text-gray-500 text-sm mt-1">
-                Founded: {company.founded}
-              </p>
-              <p className="text-gray-500 text-sm">
-                Employees: {company.employees.toLocaleString()}
-              </p>
+              <div>
+                <h2 className="text-2xl font-bold text-emerald-400 group-hover:text-emerald-500 mb-2">
+                  {company.name}
+                </h2>
+
+                <p className="text-slate-300">
+                  <strong>Industry:</strong> {company.industry}
+                </p>
+
+                <p className="text-slate-300">
+                  <strong>Location:</strong> {company.location}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-500 mt-2 text-sm">
+                  Founded: {company.founded}
+                </p>
+
+                <p className="text-slate-500 text-sm">
+                  Employees: {company.employees.toLocaleString()}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* ===================== PAGINATION UI ===================== */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-3 mt-8">
+        <div className="flex justify-center items-center gap-2 mt-10">
           <button
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-40"
             disabled={currentPage === 1}
             onClick={() => goToPage(currentPage - 1)}
+            className={`px-4 py-2 rounded bg-slate-800 border border-slate-700 
+              disabled:opacity-40 ${
+                currentPage !== 1 &&
+                "hover:border-emerald-400 hover:bg-emerald-400 cursor-pointer hover:text-slate-900 transition"
+              }`}
           >
             Prev
           </button>
 
-          {/* Page numbers */}
           {[...Array(totalPages)].map((_, idx) => (
             <button
               key={idx}
               onClick={() => goToPage(idx + 1)}
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded-lg transition ${
                 currentPage === idx + 1
-                  ? "bg-green-500 text-black"
-                  : "bg-gray-700"
+                  ? "bg-emerald-500 text-black shadow-lg"
+                  : "bg-slate-800 border cursor-pointer border-slate-700 hover:border-emerald-400"
               }`}
             >
               {idx + 1}
@@ -170,9 +192,13 @@ const CompaniesPage = () => {
           ))}
 
           <button
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-40"
             disabled={currentPage === totalPages}
             onClick={() => goToPage(currentPage + 1)}
+            className={`px-4 py-2 rounded bg-slate-800 border border-slate-700 
+              disabled:opacity-40  transition ${
+                currentPage !== totalPages &&
+                "hover:bg-emerald-400 hover:border-emerald-400 cursor-pointer hover:text-slate-900"
+              }`}
           >
             Next
           </button>

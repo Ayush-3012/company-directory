@@ -42,7 +42,7 @@ const SearchBar = () => {
           animate={{ width: "250px", opacity: 1 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
           type="text"
-          placeholder="Search products..."
+          placeholder="Search companies..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           className="px-4 py-2 w-[300px] rounded-lg bg-gray-700 text-green-400 placeholder-green-400 font-mono outline-none focus:ring-2 focus:ring-green-400"
