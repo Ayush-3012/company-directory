@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 
 const CompaniesPage = () => {
@@ -117,47 +119,52 @@ const CompaniesPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentItems.map((company) => (
-            <div
+            <motion.div
               key={company.id}
-              className="
-                bg-slate-900 border border-slate-400
-                rounded-br-2xl rounded-tl-2xl p-5 shadow-lg
-                hover:border-emerald-400 
-                hover:rounded-tr-2xl hover:rounded-bl-2xl
-                hover:rounded-br-none
-                hover:rounded-tl-none
-                hover:scale-105
-                hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]
-                transition-all duration-300
-                cursor-pointer
-                group
-                flex justify-between items-center
-                py-8
-              "
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
+              whileHover={{ scale: 1.04 }}
+              className="w-full"
             >
-              <div>
-                <h2 className="text-2xl font-bold text-emerald-400 group-hover:text-emerald-500 mb-2">
-                  {company.name}
-                </h2>
+              <div
+                className="
+      bg-slate-900 border border-slate-400
+      rounded-br-2xl rounded-tl-2xl p-5 shadow-lg
+      hover:border-emerald-400 
+      group
+      hover:rounded-tr-2xl hover:rounded-bl-2xl
+      hover:rounded-br-none hover:rounded-tl-none
+      hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]
+      transition-all duration-300
+      cursor-pointer
+      flex justify-between items-center py-8
+    "
+              >
+                <div>
+                  <h2 className="text-2xl font-bold text-emerald-400 group-hover:text-emerald-500 mb-2">
+                    {company.name}
+                  </h2>
 
-                <p className="text-slate-300">
-                  <strong>Industry:</strong> {company.industry}
-                </p>
+                  <p className="text-slate-300">
+                    <strong>Industry:</strong> {company.industry}
+                  </p>
 
-                <p className="text-slate-300">
-                  <strong>Location:</strong> {company.location}
-                </p>
+                  <p className="text-slate-300">
+                    <strong>Location:</strong> {company.location}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-500 mt-2 text-sm">
+                    Founded: {company.founded}
+                  </p>
+
+                  <p className="text-slate-500 text-sm">
+                    Employees: {company.employees.toLocaleString()}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-slate-500 mt-2 text-sm">
-                  Founded: {company.founded}
-                </p>
-
-                <p className="text-slate-500 text-sm">
-                  Employees: {company.employees.toLocaleString()}
-                </p>
-              </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
